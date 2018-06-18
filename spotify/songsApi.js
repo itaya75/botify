@@ -19,16 +19,19 @@ function discoverArtists(accessToken, artists) {
 }
 
 function artistApiCall(artists) {
+    //TODO: loop over all artists
+    var artist = artists[0];
     // Search artists by name
-    var artistsString = artists.toString();
-    spotifyApi.searchArtists(artistsString)
+    spotifyApi.searchArtists(artist)
         .then(function(data) {
             console.log('Search artists by "Love"', data.body);
+            // Get top tracks
+            
+
+
         }, function(err) {
             console.error(err);
         });
-
-
 
     /*spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE').then(
         function (data) {
