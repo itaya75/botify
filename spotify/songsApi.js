@@ -1,13 +1,36 @@
 const axios = require('axios');
 const config = require('../config');
+var SpotifyWebApi = require('spotify-web-api-node');
+// credentials are optional
+var spotifyApi = new SpotifyWebApi({
+    // clientId: 'fcecfc72172e4cd267473117a17cbd4d',
+    // clientSecret: 'a6338157c9bb5ac9c71924cb2940e1a7',
+    // redirectUri: 'http://www.example.com/callback'
+});
+var token = require('../private/token.json');
+var accessToken = token.accessToken;
+//TODO: get user's real access token
 
-function discoverMovie(kind, genreId, language) {
-  return moviedbApiCall(kind, genreId, language).then(response =>
+spotifyApi.setAccessToken(accessToken);
+
+function discoverArtists(kind, genreId, language) {
+  return artistApiCall(kind, genreId, language).then(response =>
     apiResultToCarousselle(response.data.results)
   );
 }
 
-function moviedbApiCall(kind, genreId, language) {
+function artistApiCall(kind, genreId, language) {
+    spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE').then(
+        function(data) {
+            console.log('Artist albums', data.body);
+        },
+        function(err) {
+            console.error(err);
+        }
+    );
+
+
+
   return axios.get(`https://api.themoviedb.org/3/discover/${kind}`, {
     params: {
       api_key: config.MOVIEDB_TOKEN,
@@ -55,5 +78,5 @@ function apiResultToCarousselle(results) {
 }
 
 module.exports = {
-  discoverMovie,
+  discoverArtists,
 };

@@ -2,12 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const config = require('./config');
-const loadMovieRoute = require('./discover-movies');
+const spotifyRoute = require('./spotify');
 
 const app = express();
 app.use(bodyParser.json());
 
-loadMovieRoute(app);
+spotifyRoute(app);
 
 app.post('/errors', function(req, res) {
   console.log(req.body);
