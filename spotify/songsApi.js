@@ -19,17 +19,25 @@ function discoverArtists(accessToken, userId, artists) {
     );
 }
 
-function getArtistTopTracks(artistId) {
-    return spotifyApi.getArtistTopTracks(artistId, 'US')
-        .then(function (data) {
+function _getArtistTopTracks(artistId) {
+    return spotifyApi.getArtistTopTracks(artistId, 'US');
+}
+
+function _getRelatedArtist(artistId) {
+    return spotifyApi.getArtistRelatedArtists(artistId)
+        .then(function(data) {
             console.log(data.body);
-        }, function (err) {
-            console.log('Something went wrong!', err);
+            const randomRelatedArtists = _getRandomElementsFromArray(data.body.artists, 4);
+            const randomRelatedArtistsIds = randomRelatedArtists.map(artist => (artist.id));
+            return randomRelatedArtistsIds.push(artistId);
+        }, function(err) {
+            done(err);
         });
 }
 
-function _getRelatedArtistsTopracks(artistId) {
-
+function _getRandomElementsFromArray(array, numOfElements) {
+    const shuffled = array.sort(() => .5 - Math.random());// shuffle
+    return shuffled.slice(0,numOfElements) ;
 }
 
 function artistApiCall(artists, userId) {
@@ -41,9 +49,9 @@ function artistApiCall(artists, userId) {
         .then(function (artistsData) {
             // Get top tracks
             const firstArtistId = artistsData.body.artists.items[0].id;
-            return spotifyApi.getArtistTopTracks(firstArtistId, 'US')
-                .then(function (artistTopTracks) {
-                    console.log(artistTopTracks.body);
+            return _getRelatedArtist(firstArtistId)
+                .then(function (relatedArtists) {
+                    console.log(relatedArtists.body);
                     return spotifyApi.createPlaylist(userId, 'My Cool Playlist', {'public': true})
                         .then(function (playlistData) {
                             console.log('Created playlist!');
