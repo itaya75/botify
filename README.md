@@ -1,6 +1,3 @@
-[logo]: https://github.com/plieb/movie-bot-skills-training/blob/master/assets/logo.png "Movie Bot Skills Training"
-![Movie Bot Skills Training][logo]
-
 # Movie Bot Skills Training using Recast.AI
 
 This is the backend for the skills for the Movie Bot Skills Training workshop
