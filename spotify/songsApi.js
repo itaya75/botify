@@ -18,17 +18,37 @@ function discoverArtists(accessToken, artists) {
     );
 }
 
+function getArtistTopTracks(artistId) {
+  return spotifyApi.getArtistTopTracks(artistId, 'US')
+      .then(function(data) {
+          console.log(data.body);
+      }, function(err) {
+          console.log('Something went wrong!', err);
+      });
+}
+
 function artistApiCall(artists) {
     //TODO: loop over all artists
     var artist = artists[0];
     // Search artists by name
     spotifyApi.searchArtists(artist)
-        .then(function(data) {
-            console.log('Search artists by "Love"', data.body);
+        .then(function(artistsData) {
             // Get top tracks
-            
-
-
+            const firstArtistId = artistsData.body.artists.items[0].id;
+            spotifyApi.getArtistTopTracks(firstArtistId, 'US')
+                .then(function(artistTopTracks) {
+                    console.log(artistTopTracks.body);
+                    spotifyApi.createPlaylist('itaya75', 'My Cool Playlist', { 'public' : true })
+                        .then(function(playlistData) {
+                            console.log('Created playlist!');
+                            var a = artistTopTracks;
+                            
+                        }, function(err) {
+                            console.log('Something went wrong!', err);
+                        });
+                }, function(err) {
+                    console.log('Something went wrong!', err);
+                });
         }, function(err) {
             console.error(err);
         });
