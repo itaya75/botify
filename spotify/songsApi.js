@@ -27,9 +27,14 @@ function getArtistTopTracks(artistId) {
       });
 }
 
+function _getRelatedArtistsTopracks(artistId) {
+    
+}
+
 function artistApiCall(artists) {
     //TODO: loop over all artists
     var artist = artists[0];
+    let that = this;
     // Search artists by name
     spotifyApi.searchArtists(artist)
         .then(function(artistsData) {
@@ -41,8 +46,19 @@ function artistApiCall(artists) {
                     spotifyApi.createPlaylist('itaya75', 'My Cool Playlist', { 'public' : true })
                         .then(function(playlistData) {
                             console.log('Created playlist!');
-                            var a = artistTopTracks;
-                            
+                            var playlistId = playlistData.body.id;
+                            var tracks = artistTopTracks.body.tracks;
+
+
+                            var tracksIds = tracks.map(track => ("spotify:track:" + track.id));
+                            var v=7;
+                            spotifyApi.addTracksToPlaylist('itaya75', playlistId, tracksIds)
+                                .then(function(data) {
+                                    that.
+                                    console.log('Added tracks to playlist!');
+                                }, function(err) {
+                                    console.log('Something went wrong!', err);
+                                });
                         }, function(err) {
                             console.log('Something went wrong!', err);
                         });
