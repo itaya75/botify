@@ -1,12 +1,9 @@
 const axios = require('axios');
 const config = require('../config');
 var SpotifyWebApi = require('spotify-web-api-node');
-// credentials are optional
-var spotifyApi = new SpotifyWebApi({
-    // clientId: 'fcecfc72172e4cd267473117a17cbd4d',
-    // clientSecret: 'a6338157c9bb5ac9c71924cb2940e1a7',
-    // redirectUri: 'http://www.example.com/callback'
-});
+var spotifyApi = new SpotifyWebApi({});
+var async = require('async');
+var topTracks;
 
 function setAccessToken(accessToken) {
     spotifyApi.setAccessToken(accessToken);
@@ -14,36 +11,60 @@ function setAccessToken(accessToken) {
 
 function discoverArtists(accessToken, userId, artists) {
     setAccessToken(accessToken);
-    return artistApiCall(artists, userId).then(response =>
-        apiResultToCarousselle(response.body.external_urls.spotify)
-    );
+    return _artistApiCall(artists, userId).then(response => {
+        if (response && response.body && response.body.external_urls) {
+            return apiResultToCarousselle(response.body.external_urls.spotify);
+        } else {
+            return undefined;
+        }
+    });
 }
 
 function _getArtistTopTracks(artistId) {
-    return spotifyApi.getArtistTopTracks(artistId, 'US');
+    return spotifyApi.getArtistTopTracks(artistId, 'US')
+        .then(function (artistTopTracks) {
+            if (artistTopTracks && artistTopTracks.body && artistTopTracks.body.tracks){
+                topTracks = topTracks.concat(artistTopTracks.body.tracks);
+            }
+        });
 }
 
 function _getRelatedArtist(artistId) {
     return spotifyApi.getArtistRelatedArtists(artistId)
-        .then(function(data) {
-            console.log(data.body);
-            const randomRelatedArtists = _getRandomElementsFromArray(data.body.artists, 4);
+        .then(function (relatedArtistsData) {
+            // console.log(relatedArtistsData.body);
+            const randomRelatedArtists = _getRandomElementsFromArray(relatedArtistsData.body.artists, 4);
             const randomRelatedArtistsIds = randomRelatedArtists.map(artist => (artist.id));
-            return randomRelatedArtistsIds.push(artistId);
-        }, function(err) {
+            randomRelatedArtistsIds.push(artistId);
+            return randomRelatedArtistsIds;
+        }, function (err) {
             done(err);
         });
 }
 
-function _getRandomElementsFromArray(array, numOfElements) {
-    const shuffled = array.sort(() => .5 - Math.random());// shuffle
-    return shuffled.slice(0,numOfElements) ;
+function _getArtistsTopTracks(relatedArtists) {
+    topTracks = [];
+    async.each(relatedArtists, _getArtistTopTracks, function (err) {
+        // if any of artists produced an error, err would equal that error
+        if (err) {
+            // One of the iterations produced an error. All processing will now stop.
+            console.log('Could not get artist top tracks ' + err);
+            return undefined;
+        } else {
+            console.log('top tracks found successfully');
+            return topTracks;
+        }
+    });
 }
 
-function artistApiCall(artists, userId) {
+function _getRandomElementsFromArray(array, numOfElements) {
+    const shuffled = array.sort(() => .5 - Math.random());// shuffle
+    return shuffled.slice(0, numOfElements);
+}
+
+function _artistApiCall(artists, userId) {
     //TODO: loop over all artists
     var artist = artists[0];
-    let that = this;
     // Search artists by name
     return spotifyApi.searchArtists(artist)
         .then(function (artistsData) {
@@ -51,29 +72,35 @@ function artistApiCall(artists, userId) {
             const firstArtistId = artistsData.body.artists.items[0].id;
             return _getRelatedArtist(firstArtistId)
                 .then(function (relatedArtists) {
-                    console.log(relatedArtists.body);
+                    // console.log(relatedArtists.body);
                     return spotifyApi.createPlaylist(userId, 'My Cool Playlist', {'public': true})
                         .then(function (playlistData) {
                             console.log('Created playlist!');
                             var playlistId = playlistData.body.id;
-                            var tracks = artistTopTracks.body.tracks;
-                            var tracksIds = tracks.map(track => ("spotify:track:" + track.id));
-                            return spotifyApi.addTracksToPlaylist(userId, playlistId, tracksIds)
-                                .then(function (playlistStatus) {
-                                    // that.
-                                    console.log('Added tracks to playlist!');
-                                    return playlistData;
-                                }, function (err) {
-                                    console.log('Something went wrong!', err);
-                                });
+                            return _getArtistsTopTracks(relatedArtists).then(function (topTracks) {
+                                var tracksIds = topTracks.map(track => ("spotify:track:" + track.id));
+                                return spotifyApi.addTracksToPlaylist(userId, playlistId, tracksIds)
+                                    .then(function (playlistStatus) {
+                                        // that.
+                                        console.log('Added tracks to playlist!');
+                                        return playlistData;
+                                    }, function (err) {
+                                        console.log('Something went wrong!', err);
+                                        return undefined;
+                                    });
+                            });
+
                         }, function (err) {
                             console.log('Something went wrong!', err);
+                            return undefined;
                         });
                 }, function (err) {
                     console.log('Something went wrong!', err);
+                    return undefined;
                 });
         }, function (err) {
             console.error(err);
+            return undefined;
         });
 
     /*spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE').then(
