@@ -11,61 +11,60 @@ var spotifyApi = new SpotifyWebApi({
 function setAccessToken(accessToken) {
     spotifyApi.setAccessToken(accessToken);
 }
-function discoverArtists(accessToken, artists) {
+
+function discoverArtists(accessToken, userId, artists) {
     setAccessToken(accessToken);
-    return artistApiCall(artists).then(response =>
-        apiResultToCarousselle(response.data.results)
+    return artistApiCall(artists, userId).then(response =>
+        apiResultToCarousselle(response.body.external_urls.spotify)
     );
 }
 
 function getArtistTopTracks(artistId) {
-  return spotifyApi.getArtistTopTracks(artistId, 'US')
-      .then(function(data) {
-          console.log(data.body);
-      }, function(err) {
-          console.log('Something went wrong!', err);
-      });
+    return spotifyApi.getArtistTopTracks(artistId, 'US')
+        .then(function (data) {
+            console.log(data.body);
+        }, function (err) {
+            console.log('Something went wrong!', err);
+        });
 }
 
 function _getRelatedArtistsTopracks(artistId) {
-    
+
 }
 
-function artistApiCall(artists) {
+function artistApiCall(artists, userId) {
     //TODO: loop over all artists
     var artist = artists[0];
     let that = this;
     // Search artists by name
-    spotifyApi.searchArtists(artist)
-        .then(function(artistsData) {
+    return spotifyApi.searchArtists(artist)
+        .then(function (artistsData) {
             // Get top tracks
             const firstArtistId = artistsData.body.artists.items[0].id;
-            spotifyApi.getArtistTopTracks(firstArtistId, 'US')
-                .then(function(artistTopTracks) {
+            return spotifyApi.getArtistTopTracks(firstArtistId, 'US')
+                .then(function (artistTopTracks) {
                     console.log(artistTopTracks.body);
-                    spotifyApi.createPlaylist('itaya75', 'My Cool Playlist', { 'public' : true })
-                        .then(function(playlistData) {
+                    return spotifyApi.createPlaylist(userId, 'My Cool Playlist', {'public': true})
+                        .then(function (playlistData) {
                             console.log('Created playlist!');
                             var playlistId = playlistData.body.id;
                             var tracks = artistTopTracks.body.tracks;
-
-
                             var tracksIds = tracks.map(track => ("spotify:track:" + track.id));
-                            var v=7;
-                            spotifyApi.addTracksToPlaylist('itaya75', playlistId, tracksIds)
-                                .then(function(data) {
-                                    that.
+                            return spotifyApi.addTracksToPlaylist(userId, playlistId, tracksIds)
+                                .then(function (playlistStatus) {
+                                    // that.
                                     console.log('Added tracks to playlist!');
-                                }, function(err) {
+                                    return playlistData;
+                                }, function (err) {
                                     console.log('Something went wrong!', err);
                                 });
-                        }, function(err) {
+                        }, function (err) {
                             console.log('Something went wrong!', err);
                         });
-                }, function(err) {
+                }, function (err) {
                     console.log('Something went wrong!', err);
                 });
-        }, function(err) {
+        }, function (err) {
             console.error(err);
         });
 
@@ -79,8 +78,8 @@ function artistApiCall(artists) {
     );*/
 }
 
-function apiResultToCarousselle(results) {
-    if (results.length === 0) {
+function apiResultToCarousselle(playlistUrl) {
+    /*if (results.length === 0) {
         return [
             {
                 type: 'quickReplies',
@@ -90,29 +89,41 @@ function apiResultToCarousselle(results) {
                 },
             },
         ];
-    }
+    }*/
 
-    const cards = results.slice(0, 10).map(e => ({
-        title: e.title || e.name,
-        subtitle: e.overview,
-        imageUrl: `https://image.tmdb.org/t/p/w640${e.poster_path}`,
+    const card = {
+        title: "title",
+        subtitle: "subtitle",
+        imageUrl: ``,
         buttons: [
             {
                 type: 'web_url',
-                value: `https://www.themoviedb.org/movie/${e.id}`,
-                title: 'View More',
+                value: playlistUrl,
+                title: 'Playlist',
             },
         ],
-    })
-)
-    ;
+    };
+
+    /*const cards = results.slice(0, 10).map(e => ({
+            title: e.title || e.name,
+            subtitle: e.overview,
+            imageUrl: `https://image.tmdb.org/t/p/w640${e.poster_path}`,
+            buttons: [
+                {
+                    type: 'web_url',
+                    value: `https://www.themoviedb.org/movie/${e.id}`,
+                    title: 'View More',
+                },
+            ],
+        })
+    );*/
 
     return [
         {
             type: 'text',
-            content: "Here's what I found for you!",
+            content: "Here is your new playlist",
         },
-        {type: 'carousel', content: cards},
+        {type: 'carousel', content: card},
     ];
 }
 

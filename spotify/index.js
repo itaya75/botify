@@ -5,11 +5,10 @@ const constants = require('./constants');
 function spotifyConnectionRoute(app) {
 
     app.post('/search-artist', function (req, res) {
-
-
         console.log('[POST] /search-artist');
         const artists = req.body.artists;
         var accessToken = req.headers.accesstoken;
+        var userId = req.headers.userid;
         // const movie = req.body.conversation.memory['movie'];
         // const tv = req.body.conversation.memory['tv'];
         //
@@ -25,7 +24,7 @@ function spotifyConnectionRoute(app) {
         //   ? language.short.toLowerCase()
         //   : nationality.short.toLowerCase();
 
-        return discoverArtists(accessToken, artists)
+        return discoverArtists(accessToken, userId, artists)
             .then(function (carouselle) {
                 res.json({
                     replies: carouselle,
