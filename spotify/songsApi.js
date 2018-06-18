@@ -7,24 +7,21 @@ var spotifyApi = new SpotifyWebApi({
     // clientSecret: 'a6338157c9bb5ac9c71924cb2940e1a7',
     // redirectUri: 'http://www.example.com/callback'
 });
-var token = require('../private/token.json');
-var accessToken = token.accessToken;
-//TODO: get user's real access token
 
-spotifyApi.setAccessToken(accessToken);
-
-function discoverArtists(artists) {
+function setAccessToken(accessToken) {
+    spotifyApi.setAccessToken(accessToken);
+}
+function discoverArtists(accessToken, artists) {
+    setAccessToken(accessToken);
     return artistApiCall(artists).then(response =>
         apiResultToCarousselle(response.data.results)
-)
-    ;
+    );
 }
 
 function artistApiCall(artists) {
-    // Search artists whose name contains 'Love'
-
+    // Search artists by name
     var artistsString = artists.toString();
-    spotifyApi.searchArtists("elvis","love")
+    spotifyApi.searchArtists(artistsString)
         .then(function(data) {
             console.log('Search artists by "Love"', data.body);
         }, function(err) {
