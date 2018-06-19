@@ -13,5 +13,10 @@ module.exports = {
         response.status = status;
         response.message = message;
         return res.status(stat).json(response);
+    },
+    setUserName: function (res, status, message, stat, response) {
+        response.status = status;
+        response.message = message;
+        return res.status(stat).json(response);
     }
 };

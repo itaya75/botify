@@ -83,6 +83,10 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
                             console.log('Created playlist!');
                             var playlistId = playlistData.body.id;
                             return _getArtistsTopTracks(relatedArtists, numOfTracksFromEachArtist).then(function (topTracks) {
+                                if (topTracks.length < 1 ){
+                                    console.log('No tracks found');
+                                    return undefined;
+                                }
                                 var tracksIds = topTracks.map(track => ("spotify:track:" + track.id)).sort(() => .5 - Math.random());
                                 return spotifyApi.addTracksToPlaylist(userId, playlistId, tracksIds)
                                     .then(function (playlistStatus) {
