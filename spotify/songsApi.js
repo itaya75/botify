@@ -3,7 +3,6 @@ const config = require('../config');
 var SpotifyWebApi = require('spotify-web-api-node');
 var spotifyApi = new SpotifyWebApi({});
 var async = require('async');
-var topTracks;
 
 function setAccessToken(accessToken) {
     spotifyApi.setAccessToken(accessToken);
@@ -23,9 +22,13 @@ function discoverArtists(accessToken, userId, artists) {
 function _getArtistTopTracks(artistId) {
     return spotifyApi.getArtistTopTracks(artistId, 'US')
         .then(function (artistTopTracks) {
-            if (artistTopTracks && artistTopTracks.body && artistTopTracks.body.tracks){
-                topTracks = topTracks.concat(artistTopTracks.body.tracks);
+            if (artistTopTracks && artistTopTracks.body && artistTopTracks.body.tracks) {
+                return artistTopTracks.body.tracks;
             }
+            return [];
+        }, function (err) {
+            console.log('_getArtistTopTracks: ', err);
+            return undefined;
         });
 }
 
@@ -43,17 +46,18 @@ function _getRelatedArtist(artistId) {
 }
 
 function _getArtistsTopTracks(relatedArtists) {
-    topTracks = [];
-    async.each(relatedArtists, _getArtistTopTracks, function (err) {
-        // if any of artists produced an error, err would equal that error
-        if (err) {
-            // One of the iterations produced an error. All processing will now stop.
-            console.log('Could not get artist top tracks ' + err);
-            return undefined;
-        } else {
-            console.log('top tracks found successfully');
-            return topTracks;
-        }
+    var promises = [];
+    for (var i in relatedArtists) {
+        promises.push(_getArtistTopTracks(relatedArtists[i], this));
+    }
+    // return Promise.all(promises);
+    return Promise.all(promises).then(function (values) {
+        var allTop = values.reduce((a, b) => a.concat(b), []);
+        return allTop;
+
+    }, function () {
+        console.log('_getArtistsTopTracks ' + err);
+        return undefined;
     });
 }
 
@@ -81,7 +85,6 @@ function _artistApiCall(artists, userId) {
                                 var tracksIds = topTracks.map(track => ("spotify:track:" + track.id));
                                 return spotifyApi.addTracksToPlaylist(userId, playlistId, tracksIds)
                                     .then(function (playlistStatus) {
-                                        // that.
                                         console.log('Added tracks to playlist!');
                                         return playlistData;
                                     }, function (err) {
@@ -102,15 +105,6 @@ function _artistApiCall(artists, userId) {
             console.error(err);
             return undefined;
         });
-
-    /*spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE').then(
-        function (data) {
-            console.log('Artist albums', data.body);
-        },
-        function (err) {
-            console.error(err);
-        }
-    );*/
 }
 
 function apiResultToCarousselle(playlistUrl) {
