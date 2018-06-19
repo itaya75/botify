@@ -30,8 +30,8 @@ function spotifyConnectionRoute(app) {
             return utilities.setErrorResponse(res, 'ERROR', "wrong number input", 400);
         }
         let numberOfSongs = req.body.conversation.memory["number-of-songs"];
-        let num = numberOfSongs.scalar;
-        console.log('number scalar = ' + num);
+        let num = numberOfSongs.value;
+        console.log('number of songs = ' + num);
         var numOfTracksFromEachArtist = num / 10;
         return discoverArtists(accessToken, userId, artists, numOfTracksFromEachArtist)
             .then(function (carouselle) {
