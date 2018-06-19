@@ -16,16 +16,23 @@ function spotifyConnectionRoute(app) {
         console.log('[POST] /search-artist');
         // get artist
         const artists = [];
+
         if (!req.body.conversation || !req.body.conversation.memory || !req.body.conversation.memory.artist|| !req.body.conversation.memory.artist.value) {
+            console.error('missing artist value');
             return utilities.setErrorResponse(res, 'ERROR', "wrong input", 400);
         }
+        console.log('artist value = ' + req.body.conversation.memory.artist.value);
         artists.push(req.body.conversation.memory.artist.value);
+        console.log('artists = ' + artists);
 
         // get num tracks
-        if (!req.body.conversation || !req.body.conversation.memory || !req.body.conversation.memory.number || !req.body.conversation.memory.number.scalar) {
+        if (!req.body.conversation || !req.body.conversation.memory) {
             return utilities.setErrorResponse(res, 'ERROR', "wrong number input", 400);
         }
-        var num = req.body.conversation.memory.number.scalar;
+        let ff= req.body.conversation.memory["number-of-songs"];
+        let num = ff.scalar;
+        console.log('number scalar = ' + num);
+        // var num = req.body.conversation.memory.number-of-songs.scalar;
         var numOfTracksFromEachArtist = num / 10;
         // var numOfTracksFromEachArtist = req.body.numoftracks / 10;
         // var accessToken = req.headers.accesstoken;

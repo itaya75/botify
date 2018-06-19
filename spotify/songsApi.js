@@ -49,7 +49,7 @@ function _getRelatedArtist(artistId) {
 function _getArtistsTopTracks(relatedArtists, numOfTracksFromEachArtist) {
     var promises = [];
     for (var i in relatedArtists) {
-        promises.push(_getArtistTopTracks(relatedArtists[i], numOfTracksFromEachArtist,  this));
+        promises.push(_getArtistTopTracks(relatedArtists[i], numOfTracksFromEachArtist, this));
     }
     // return Promise.all(promises);
     return Promise.all(promises).then(function (values) {
@@ -83,7 +83,7 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
                             console.log('Created playlist!');
                             var playlistId = playlistData.body.id;
                             return _getArtistsTopTracks(relatedArtists, numOfTracksFromEachArtist).then(function (topTracks) {
-                                if (topTracks.length < 1 ){
+                                if (topTracks.length < 1) {
                                     console.log('No tracks found');
                                     return undefined;
                                 }
@@ -93,7 +93,7 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
                                         console.log('Added tracks to playlist!');
                                         return playlistData;
                                     }, function (err) {
-                                        console.log('Something went wrong!', err);
+                                        console.log('addTracksToPlaylist failed', err);
                                         return undefined;
                                     });
                             });
@@ -113,17 +113,7 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
 }
 
 function apiResultToCarousselle(playlistUrl) {
-    /*if (results.length === 0) {
-        return [
-            {
-                type: 'quickReplies',
-                content: {
-                    title: 'Sorry, but I could not find any results for your request :(',
-                    buttons: [{title: 'Start over', value: 'Start over'}],
-                },
-            },
-        ];
-    }*/
+    console.log("playlist created: " + playlistUrl);
 
     const card = {
         title: "title",
@@ -137,20 +127,6 @@ function apiResultToCarousselle(playlistUrl) {
             },
         ],
     };
-
-    /*const cards = results.slice(0, 10).map(e => ({
-            title: e.title || e.name,
-            subtitle: e.overview,
-            imageUrl: `https://image.tmdb.org/t/p/w640${e.poster_path}`,
-            buttons: [
-                {
-                    type: 'web_url',
-                    value: `https://www.themoviedb.org/movie/${e.id}`,
-                    title: 'View More',
-                },
-            ],
-        })
-    );*/
 
     return [
         {
