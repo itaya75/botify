@@ -7,9 +7,10 @@ function spotifyConnectionRoute(app) {
     app.post('/search-artist', function (req, res) {
         console.log('[POST] /search-artist');
         const artists = req.body.artists;
+        var numOfTracksFromEachArtist =  req.body.numoftracks / 10;
         var accessToken = req.headers.accesstoken;
         var userId = req.headers.userid;
-        return discoverArtists(accessToken, userId, artists)
+        return discoverArtists(accessToken, userId, artists, numOfTracksFromEachArtist)
             .then(function (carouselle) {
                 if (carouselle) {
                     res.json({

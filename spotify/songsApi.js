@@ -3,14 +3,15 @@ const config = require('../config');
 var SpotifyWebApi = require('spotify-web-api-node');
 var spotifyApi = new SpotifyWebApi({});
 var async = require('async');
+var numOfTracksFromEachArtist;
 
 function setAccessToken(accessToken) {
     spotifyApi.setAccessToken(accessToken);
 }
 
-function discoverArtists(accessToken, userId, artists) {
+function discoverArtists(accessToken, userId, artists, numOfTracksFromEachArtist) {
     setAccessToken(accessToken);
-    return _artistApiCall(artists, userId).then(response => {
+    return _artistApiCall(artists, userId, numOfTracksFromEachArtist).then(response => {
         if (response && response.body && response.body.external_urls) {
             return apiResultToCarousselle(response.body.external_urls.spotify);
         } else {
@@ -19,11 +20,11 @@ function discoverArtists(accessToken, userId, artists) {
     });
 }
 
-function _getArtistTopTracks(artistId) {
+function _getArtistTopTracks(artistId, numOfTracksFromEachArtist) {
     return spotifyApi.getArtistTopTracks(artistId, 'US')
         .then(function (artistTopTracks) {
             if (artistTopTracks && artistTopTracks.body && artistTopTracks.body.tracks) {
-                return artistTopTracks.body.tracks;
+                return _getRandomElementsFromArray(artistTopTracks.body.tracks, numOfTracksFromEachArtist);
             }
             return [];
         }, function (err) {
@@ -36,7 +37,7 @@ function _getRelatedArtist(artistId) {
     return spotifyApi.getArtistRelatedArtists(artistId)
         .then(function (relatedArtistsData) {
             // console.log(relatedArtistsData.body);
-            const randomRelatedArtists = _getRandomElementsFromArray(relatedArtistsData.body.artists, 4);
+            const randomRelatedArtists = _getRandomElementsFromArray(relatedArtistsData.body.artists, 9);
             const randomRelatedArtistsIds = randomRelatedArtists.map(artist => (artist.id));
             randomRelatedArtistsIds.push(artistId);
             return randomRelatedArtistsIds;
@@ -45,10 +46,10 @@ function _getRelatedArtist(artistId) {
         });
 }
 
-function _getArtistsTopTracks(relatedArtists) {
+function _getArtistsTopTracks(relatedArtists, numOfTracksFromEachArtist) {
     var promises = [];
     for (var i in relatedArtists) {
-        promises.push(_getArtistTopTracks(relatedArtists[i], this));
+        promises.push(_getArtistTopTracks(relatedArtists[i], numOfTracksFromEachArtist,  this));
     }
     // return Promise.all(promises);
     return Promise.all(promises).then(function (values) {
@@ -66,7 +67,7 @@ function _getRandomElementsFromArray(array, numOfElements) {
     return shuffled.slice(0, numOfElements);
 }
 
-function _artistApiCall(artists, userId) {
+function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
     //TODO: loop over all artists
     var artist = artists[0];
     // Search artists by name
@@ -81,8 +82,8 @@ function _artistApiCall(artists, userId) {
                         .then(function (playlistData) {
                             console.log('Created playlist!');
                             var playlistId = playlistData.body.id;
-                            return _getArtistsTopTracks(relatedArtists).then(function (topTracks) {
-                                var tracksIds = topTracks.map(track => ("spotify:track:" + track.id));
+                            return _getArtistsTopTracks(relatedArtists, numOfTracksFromEachArtist).then(function (topTracks) {
+                                var tracksIds = topTracks.map(track => ("spotify:track:" + track.id)).sort(() => .5 - Math.random());
                                 return spotifyApi.addTracksToPlaylist(userId, playlistId, tracksIds)
                                     .then(function (playlistStatus) {
                                         console.log('Added tracks to playlist!');
