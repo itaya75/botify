@@ -14,10 +14,10 @@ function spotifyConnectionRoute(app) {
 
     app.post('/search-artist', _isLoggedIn, function (req, res) {
         console.log('[POST] /search-artist');
+
         // get artist
         const artists = [];
-
-        if (!req.body.conversation || !req.body.conversation.memory || !req.body.conversation.memory.artist|| !req.body.conversation.memory.artist.value) {
+        if (!req.body.conversation || !req.body.conversation.memory || !req.body.conversation.memory.artist || !req.body.conversation.memory.artist.value) {
             console.error('missing artist value');
             return utilities.setErrorResponse(res, 'ERROR', "wrong input", 400);
         }
@@ -29,14 +29,10 @@ function spotifyConnectionRoute(app) {
         if (!req.body.conversation || !req.body.conversation.memory) {
             return utilities.setErrorResponse(res, 'ERROR', "wrong number input", 400);
         }
-        let ff= req.body.conversation.memory["number-of-songs"];
-        let num = ff.scalar;
+        let numberOfSongs = req.body.conversation.memory["number-of-songs"];
+        let num = numberOfSongs.scalar;
         console.log('number scalar = ' + num);
-        // var num = req.body.conversation.memory.number-of-songs.scalar;
         var numOfTracksFromEachArtist = num / 10;
-        // var numOfTracksFromEachArtist = req.body.numoftracks / 10;
-        // var accessToken = req.headers.accesstoken;
-        // var userId = req.headers.userid;
         return discoverArtists(accessToken, userId, artists, numOfTracksFromEachArtist)
             .then(function (carouselle) {
                 if (carouselle) {

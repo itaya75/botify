@@ -74,6 +74,10 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
     return spotifyApi.searchArtists(artist)
         .then(function (artistsData) {
             // Get top tracks
+            if (artistsData.body.artists.items.length < 1){
+                console.log('no artists found for ', artist);
+                return undefined;
+            }
             const firstArtistId = artistsData.body.artists.items[0].id;
             return _getRelatedArtist(firstArtistId)
                 .then(function (relatedArtists) {
