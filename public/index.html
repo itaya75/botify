@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Welcome</title>
+        <!-- <link rel="stylesheet" href="style.css" type="text/css"> -->
+        <style>
+          *{
+    margin:0;
+    padding:0;
+}
+html, body{
+    height:100%;
+}
+
+body{
+    background-color:black;
+    background-image:url(images/coding.jpg);
+    background-position:center;
+    background-size:cover;
+    background-blend-mode:soft-light;
+}
+
+.heading{
+    width:600px;
+    height:300px;
+    margin:auto;
+    position:absolute;
+    top:0px; bottom:0px; right:0px; left:0px;
+}
+.title1{
+    display: block;
+    text-align: center;
+    color:#1db954;
+    font-size:60pt;
+    font-family:big john;
+}
+.title2{
+    display:block;
+    margin-top:15px;
+    text-align: center;
+    color:#1db954;
+    font-size:14pt;
+    font-family:serif;
+}
+
+.register{
+    margin: 50px auto;
+    display:block;
+    width:180px;
+    height:50px;
+    border:3px solid white;
+    background-color:rgba(255,255,255,0);
+    color:white;
+    font-family:sans-serif;
+    font-weight: bold;
+    border-radius: 5px;
+    
+    transition: background-color 1000ms, color 1000ms;
+}
+.recastai{
+    width: 120px;
+}
+img{
+    vertical-align: middle;
+}
+.register:hover{
+    background-color:rgba(255,255,255,1);
+    color:#222;
+    cursor:pointer;
+    transition: background-color 1000ms, color 1000ms;
+}
+        </style> 
+    </head>
+    <body>
+        <div class="heading">
+            <span class="title1">Botify</span>
+            <span class="title2">For those who love music</span>
+            <span class="title2">Powered by <img src="public/Spotify.png" height="42" width="42"> Spotify and <img src="https://cdn.recast.ai/website/logo/recast-ai-logo-inline.svg" class="recastai"></span>
+        </div>  
+        <script src="https://cdn.recast.ai/webchat/webchat.js" channelId="c68f787d-8625-462e-a1f5-0a4eec34945e" token="0fdda71e05e0e2b0e6f085097f1c5ecf" id="recast-webchat"></script>      
+                 
+    </body>
+</html> 
