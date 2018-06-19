@@ -13,7 +13,7 @@ function discoverArtists(accessToken, userId, artists, numOfTracksFromEachArtist
     setAccessToken(accessToken);
     return _artistApiCall(artists, userId, numOfTracksFromEachArtist).then(response => {
         if (response && response.body && response.body.external_urls) {
-            return apiResultToCarousselle(response.body.external_urls.spotify);
+            return apiResultToCarousselle(response.body.external_urls.spotify, _getPlaylistName(artists[0]));
         } else {
             return undefined;
         }
@@ -67,14 +67,24 @@ function _getRandomElementsFromArray(array, numOfElements) {
     return shuffled.slice(0, numOfElements);
 }
 
+
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+function _getPlaylistName(artist) {
+    return toTitleCase(artist) + '\'s Playlist';
+}
+
 function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
-    //TODO: loop over all artists
     var artist = artists[0];
+    let playlistName = _getPlaylistName(artist);
     // Search artists by name
     return spotifyApi.searchArtists(artist)
         .then(function (artistsData) {
             // Get top tracks
-            if (artistsData.body.artists.items.length < 1){
+            if (artistsData.body.artists.items.length < 1) {
                 console.log('no artists found for ', artist);
                 return undefined;
             }
@@ -82,7 +92,7 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
             return _getRelatedArtist(firstArtistId)
                 .then(function (relatedArtists) {
                     // console.log(relatedArtists.body);
-                    return spotifyApi.createPlaylist(userId, 'My Cool Playlist', {'public': true})
+                    return spotifyApi.createPlaylist(userId, playlistName, {'public': true})
                         .then(function (playlistData) {
                             console.log('Created playlist!');
                             var playlistId = playlistData.body.id;
@@ -116,29 +126,24 @@ function _artistApiCall(artists, userId, numOfTracksFromEachArtist) {
         });
 }
 
-function apiResultToCarousselle(playlistUrl) {
+function apiResultToCarousselle(playlistUrl, playlistName) {
     console.log("playlist created: " + playlistUrl);
-
-    const card = {
-        title: "title",
-        subtitle: "subtitle",
-        imageUrl: ``,
-        buttons: [
-            {
-                type: 'web_url',
-                value: playlistUrl,
-                title: 'Playlist',
-            },
-        ],
+    var card = {
+        type: 'card',
+        content: {
+            title: playlistName,
+            subtitle: 'Powered by Botify',
+            imageUrl: 'http://www.dailyrindblog.com/wp-content/uploads/2016/03/playlist2.png',
+            buttons: [
+                {
+                    title: 'Go to playlist',
+                    type: 'web_url',
+                    value: playlistUrl
+                }
+            ]
+        }
     };
-
-    return [
-        {
-            type: 'text',
-            content: "Here is your new playlist",
-        },
-        {type: 'carousel', content: card},
-    ];
+    return card;
 }
 
 module.exports = {

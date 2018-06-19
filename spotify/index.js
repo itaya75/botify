@@ -34,10 +34,10 @@ function spotifyConnectionRoute(app) {
         console.log('number of songs = ' + num);
         var numOfTracksFromEachArtist = num / 10;
         return discoverArtists(accessToken, userId, artists, numOfTracksFromEachArtist)
-            .then(function (carouselle) {
-                if (carouselle) {
+            .then(function (card) {
+                if (card) {
                     res.json({
-                        replies: carouselle,
+                        "replies": [card]
                     });
                 } else {
                     return utilities.setErrorResponse(res, 'ERROR', "No artists found", 400);
